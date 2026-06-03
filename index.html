@@ -622,6 +622,31 @@
             }
         }
 
+        // Auto-check when user clicks/focuses the link field
+        document.querySelectorAll('.platform-row .platform-link').forEach(input => {
+            input.addEventListener('focus', function() {
+                const row = this.closest('.platform-row');
+                const cb = row.querySelector('input[type="checkbox"]');
+                if (cb && !cb.checked) {
+                    cb.checked = true;
+                    this.disabled = false;
+                }
+            });
+            // Also enable on click even if disabled
+            input.addEventListener('mousedown', function(e) {
+                if (this.disabled) {
+                    e.preventDefault();
+                    const row = this.closest('.platform-row');
+                    const cb = row.querySelector('input[type="checkbox"]');
+                    if (cb) {
+                        cb.checked = true;
+                        this.disabled = false;
+                        setTimeout(() => this.focus(), 0);
+                    }
+                }
+            });
+        });
+
         function toggleOther(checkbox) {
             const otherSection = document.getElementById('otherPlatforms');
             otherSection.style.display = checkbox.checked ? 'block' : 'none';
