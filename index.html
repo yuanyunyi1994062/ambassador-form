@@ -561,11 +561,9 @@
                     <label class="field-label">Preferred Payout Method <span class="required">*</span></label>
                     <div class="select-type">Single select</div>
                     <div class="radio-group">
-                        <label><input type="radio" name="payout" value="usdt" required onchange="toggleWallet(this)"> USDT (TRC-20)</label>
-                        <label><input type="radio" name="payout" value="stars" onchange="toggleWallet(this)"> TG Stars</label>
-                    </div>
-                    <div id="walletField" style="margin-top: 10px; display: none;">
-                        <input type="text" name="usdt_wallet" placeholder="Your TRC-20 wallet address">
+                        <label><input type="radio" name="payout" value="usdt" required> USDT (TRC-20)</label>
+                        <label><input type="radio" name="payout" value="stars"> TG Stars</label>
+                        <label><input type="radio" name="payout" value="other"> Other</label>
                     </div>
                 </div>
 
@@ -616,14 +614,7 @@
             }
         }
 
-        function toggleWallet(radio) {
-            const walletField = document.getElementById('walletField');
-            if (radio.value === 'usdt') {
-                walletField.style.display = 'block';
-            } else {
-                walletField.style.display = 'none';
-            }
-        }
+
 
         // === Validation helpers ===
         function showError(el, msg) {
@@ -649,10 +640,7 @@
             // @username, 5-32 chars, alphanumeric + underscore
             return /^@[a-zA-Z0-9_]{4,31}$/.test(str.trim());
         }
-        function isValidWallet(str) {
-            // TRC-20 address starts with T, 34 chars
-            return /^T[a-zA-Z0-9]{33}$/.test(str.trim());
-        }
+
 
         document.getElementById('ambassadorForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -742,23 +730,10 @@
                 valid = false;
             }
 
-            // 8. Payout method — must select
+            // 9. Payout method — must select
             const payoutChecked = document.querySelector('input[name="payout"]:checked');
             if (!payoutChecked) {
                 valid = false;
-            }
-
-            // 9. USDT wallet validation (if USDT selected)
-            const walletInput = document.getElementById('walletAddress');
-            if (walletInput) clearError(walletInput);
-            if (payoutChecked && payoutChecked.value === 'usdt' && walletInput) {
-                if (!walletInput.value.trim()) {
-                    showError(walletInput, 'Enter your TRC-20 wallet address');
-                    valid = false;
-                } else if (!isValidWallet(walletInput.value)) {
-                    showError(walletInput, 'Invalid TRC-20 address (starts with T, 34 characters)');
-                    valid = false;
-                }
             }
 
             // 10. Terms checkbox
