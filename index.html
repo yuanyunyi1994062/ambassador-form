@@ -371,6 +371,8 @@
             .hero h1 { font-size: 24px; }
             .platform-row { flex-direction: column; align-items: stretch; }
             .platform-row .platform-check { min-width: unset; }
+            .radio-group label, .checkbox-group label { min-height: 44px; display: flex; align-items: center; }
+            input[type="text"], input[type="url"] { font-size: 16px; }
         }
     </style>
 </head>
@@ -470,8 +472,11 @@
                         <label class="platform-check"><input type="checkbox" name="platforms" value="onlyfans" onchange="toggleLink(this)"> OnlyFans</label>
                         <input type="url" class="platform-link" name="link_onlyfans" placeholder="https://onlyfans.com/..." disabled>
                     </div>
-                    <div class="other-section">
-                        <div class="hint" style="margin-top: 12px; margin-bottom: 8px;">Other platforms (optional)</div>
+                    <div class="platform-row">
+                        <label class="platform-check"><input type="checkbox" name="platforms" value="other" onchange="toggleOther(this)"> Other</label>
+                    </div>
+                    <div id="otherPlatforms" style="display: none;">
+                        <div class="hint" style="margin-top: 8px; margin-bottom: 8px;">Specify your platform(s)</div>
                         <div class="platform-row other-row">
                             <input type="text" class="platform-name" name="other_platform_1" placeholder="Platform name">
                             <input type="url" class="platform-link other-link" name="link_other_1" placeholder="Link">
@@ -561,9 +566,12 @@
                     <label class="field-label">Preferred Payout Method <span class="required">*</span></label>
                     <div class="select-type">Single select</div>
                     <div class="radio-group">
-                        <label><input type="radio" name="payout" value="usdt" required> USDT (TRC-20)</label>
-                        <label><input type="radio" name="payout" value="stars"> TG Stars</label>
-                        <label><input type="radio" name="payout" value="other"> Other</label>
+                        <label><input type="radio" name="payout" value="usdt" required onchange="togglePayoutOther(this)"> USDT (TRC-20)</label>
+                        <label><input type="radio" name="payout" value="stars" onchange="togglePayoutOther(this)"> TG Stars</label>
+                        <label><input type="radio" name="payout" value="other" onchange="togglePayoutOther(this)"> Other</label>
+                    </div>
+                    <div id="payoutOtherField" style="margin-top: 10px; display: none;">
+                        <input type="text" id="payoutOtherInput" name="payout_other" placeholder="Please specify your preferred method" style="width:100%;">
                     </div>
                 </div>
 
@@ -611,6 +619,25 @@
             } else {
                 linkInput.disabled = true;
                 linkInput.value = '';
+            }
+        }
+
+        function toggleOther(checkbox) {
+            const otherSection = document.getElementById('otherPlatforms');
+            otherSection.style.display = checkbox.checked ? 'block' : 'none';
+            if (!checkbox.checked) {
+                otherSection.querySelectorAll('input').forEach(i => i.value = '');
+            }
+        }
+
+        function togglePayoutOther(radio) {
+            const field = document.getElementById('payoutOtherField');
+            if (radio.value === 'other') {
+                field.style.display = 'block';
+                document.getElementById('payoutOtherInput').focus();
+            } else {
+                field.style.display = 'none';
+                document.getElementById('payoutOtherInput').value = '';
             }
         }
 
@@ -734,6 +761,16 @@
             const payoutChecked = document.querySelector('input[name="payout"]:checked');
             if (!payoutChecked) {
                 valid = false;
+            }
+
+            // 9b. If payout = other, must specify
+            const payoutOtherInput = document.getElementById('payoutOtherInput');
+            if (payoutOtherInput) clearError(payoutOtherInput);
+            if (payoutChecked && payoutChecked.value === 'other') {
+                if (!payoutOtherInput.value.trim()) {
+                    showError(payoutOtherInput, 'Please specify your preferred payout method');
+                    valid = false;
+                }
             }
 
             // 10. Terms checkbox
