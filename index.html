@@ -446,7 +446,7 @@
                 <!-- 1. TG Username -->
                 <div class="field">
                     <label class="field-label">Telegram Username <span class="required">*</span></label>
-                    <input type="text" name="tg_username" placeholder="@yourusername" required>
+                    <input type="text" name="tg_username" placeholder="your_username" required>
                 </div>
 
                 <!-- 2. Platforms with links -->
@@ -686,9 +686,8 @@
             return str.trim().length > 0;
         }
         function isValidTgUsername(str) {
-            // Accept with or without @, 4-32 chars, alphanumeric + underscore
-            const clean = str.trim().replace(/^@/, '');
-            return /^[a-zA-Z0-9_]{4,32}$/.test(clean);
+            // Just needs to be non-empty, at least 3 chars
+            return str.trim().length >= 3;
         }
 
 
@@ -700,7 +699,7 @@
             const tgInput = document.querySelector('input[name="tg_username"]');
             clearError(tgInput);
             if (!isValidTgUsername(tgInput.value)) {
-                showError(tgInput, 'Enter a valid Telegram username (e.g. @yourname)');
+                showError(tgInput, 'Please enter your Telegram username');
                 valid = false;
             }
 
