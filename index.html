@@ -213,9 +213,12 @@
             color: #52525b;
         }
 
-        .platform-row .platform-link:disabled {
+        .platform-row .platform-link[data-inactive="true"] {
             opacity: 0.3;
-            cursor: not-allowed;
+            cursor: pointer;
+        }
+        .platform-row .platform-link[data-inactive="false"] {
+            opacity: 1;
         }
 
         /* Other platform rows — always enabled */
@@ -454,23 +457,23 @@
                     
                     <div class="platform-row">
                         <label class="platform-check"><input type="checkbox" name="platforms" value="telegram" onchange="toggleLink(this)"> Telegram</label>
-                        <input type="url" class="platform-link" name="link_telegram" placeholder="https://t.me/..." disabled>
+                        <input type="url" class="platform-link" name="link_telegram" placeholder="https://t.me/..." data-inactive="true" readonly>
                     </div>
                     <div class="platform-row">
                         <label class="platform-check"><input type="checkbox" name="platforms" value="discord" onchange="toggleLink(this)"> Discord</label>
-                        <input type="url" class="platform-link" name="link_discord" placeholder="Discord server invite link" disabled>
+                        <input type="url" class="platform-link" name="link_discord" placeholder="Discord server invite link" data-inactive="true" readonly>
                     </div>
                     <div class="platform-row">
                         <label class="platform-check"><input type="checkbox" name="platforms" value="reddit" onchange="toggleLink(this)"> Reddit</label>
-                        <input type="url" class="platform-link" name="link_reddit" placeholder="https://reddit.com/u/..." disabled>
+                        <input type="url" class="platform-link" name="link_reddit" placeholder="https://reddit.com/u/..." data-inactive="true" readonly>
                     </div>
                     <div class="platform-row">
                         <label class="platform-check"><input type="checkbox" name="platforms" value="x" onchange="toggleLink(this)"> X / Twitter</label>
-                        <input type="url" class="platform-link" name="link_x" placeholder="https://x.com/..." disabled>
+                        <input type="url" class="platform-link" name="link_x" placeholder="https://x.com/..." data-inactive="true" readonly>
                     </div>
                     <div class="platform-row">
                         <label class="platform-check"><input type="checkbox" name="platforms" value="onlyfans" onchange="toggleLink(this)"> OnlyFans</label>
-                        <input type="url" class="platform-link" name="link_onlyfans" placeholder="https://onlyfans.com/..." disabled>
+                        <input type="url" class="platform-link" name="link_onlyfans" placeholder="https://onlyfans.com/..." data-inactive="true" readonly>
                     </div>
                     <div class="platform-row">
                         <label class="platform-check"><input type="checkbox" name="platforms" value="other" onchange="toggleOther(this)"> Other</label>
@@ -614,34 +617,27 @@
             const row = checkbox.closest('.platform-row');
             const linkInput = row.querySelector('.platform-link');
             if (checkbox.checked) {
-                linkInput.disabled = false;
+                linkInput.removeAttribute('readonly');
+                linkInput.setAttribute('data-inactive', 'false');
                 linkInput.focus();
             } else {
-                linkInput.disabled = true;
+                linkInput.setAttribute('readonly', '');
+                linkInput.setAttribute('data-inactive', 'true');
                 linkInput.value = '';
             }
         }
 
-        // Auto-check when user clicks/focuses the link field
+        // Click on inactive link field → auto-check and activate
         document.querySelectorAll('.platform-row .platform-link').forEach(input => {
-            input.addEventListener('focus', function() {
-                const row = this.closest('.platform-row');
-                const cb = row.querySelector('input[type="checkbox"]');
-                if (cb && !cb.checked) {
-                    cb.checked = true;
-                    this.disabled = false;
-                }
-            });
-            // Also enable on click even if disabled
-            input.addEventListener('mousedown', function(e) {
-                if (this.disabled) {
-                    e.preventDefault();
+            input.addEventListener('click', function() {
+                if (this.getAttribute('data-inactive') === 'true') {
                     const row = this.closest('.platform-row');
                     const cb = row.querySelector('input[type="checkbox"]');
                     if (cb) {
                         cb.checked = true;
-                        this.disabled = false;
-                        setTimeout(() => this.focus(), 0);
+                        this.removeAttribute('readonly');
+                        this.setAttribute('data-inactive', 'false');
+                        this.focus();
                     }
                 }
             });
