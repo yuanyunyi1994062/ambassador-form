@@ -686,8 +686,9 @@
             return str.trim().length > 0;
         }
         function isValidTgUsername(str) {
-            // @username, 5-32 chars, alphanumeric + underscore
-            return /^@[a-zA-Z0-9_]{4,31}$/.test(str.trim());
+            // Accept with or without @, 4-32 chars, alphanumeric + underscore
+            const clean = str.trim().replace(/^@/, '');
+            return /^[a-zA-Z0-9_]{4,32}$/.test(clean);
         }
 
 
