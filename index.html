@@ -625,31 +625,158 @@
             }
         }
 
+        // === Validation helpers ===
+        function showError(el, msg) {
+            let err = el.parentElement.querySelector('.field-error');
+            if (!err) {
+                err = document.createElement('div');
+                err.className = 'field-error';
+                err.style.cssText = 'color:#ef4444;font-size:12px;margin-top:4px;';
+                el.parentElement.appendChild(err);
+            }
+            err.textContent = msg;
+            el.style.borderColor = '#ef4444';
+        }
+        function clearError(el) {
+            const err = el.parentElement.querySelector('.field-error');
+            if (err) err.remove();
+            el.style.borderColor = '';
+        }
+        function isValidUrl(str) {
+            return /^https?:\/\/.+\..+/.test(str.trim());
+        }
+        function isValidTgUsername(str) {
+            // @username, 5-32 chars, alphanumeric + underscore
+            return /^@[a-zA-Z0-9_]{4,31}$/.test(str.trim());
+        }
+        function isValidWallet(str) {
+            // TRC-20 address starts with T, 34 chars
+            return /^T[a-zA-Z0-9]{33}$/.test(str.trim());
+        }
+
         document.getElementById('ambassadorForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
+            let valid = true;
+
+            // 1. TG Username validation
+            const tgInput = document.querySelector('input[name="tg_username"]');
+            clearError(tgInput);
+            if (!isValidTgUsername(tgInput.value)) {
+                showError(tgInput, 'Enter a valid Telegram username (e.g. @yourname)');
+                valid = false;
+            }
+
+            // 2. At least one platform with a valid link
             const checkedPlatforms = document.querySelectorAll('input[name="platforms"]:checked');
-            let hasLink = false;
+            let hasValidLink = false;
+            let linkErrors = [];
             checkedPlatforms.forEach(cb => {
                 const row = cb.closest('.platform-row');
                 const link = row.querySelector('.platform-link');
-                if (link.value.trim()) hasLink = true;
+                clearError(link);
+                if (!link.value.trim()) {
+                    showError(link, 'Please add your profile link');
+                    valid = false;
+                } else if (!isValidUrl(link.value)) {
+                    showError(link, 'Enter a valid URL (https://...)');
+                    valid = false;
+                } else {
+                    hasValidLink = true;
+                }
             });
-            // Also check "Other" rows
+            // Check "Other" rows
             document.querySelectorAll('.other-row').forEach(row => {
                 const name = row.querySelector('.platform-name').value.trim();
-                const link = row.querySelector('.other-link').value.trim();
-                if (name && link) hasLink = true;
+                const link = row.querySelector('.other-link');
+                clearError(link);
+                if (name && !link.value.trim()) {
+                    showError(link, 'Add a link for this platform');
+                    valid = false;
+                } else if (name && link.value.trim() && !isValidUrl(link.value.trim())) {
+                    showError(link, 'Enter a valid URL (https://...)');
+                    valid = false;
+                } else if (name && link.value.trim()) {
+                    hasValidLink = true;
+                }
             });
 
             const platformError = document.getElementById('platformError');
-            if (checkedPlatforms.length === 0 && !hasLink) {
+            if (checkedPlatforms.length === 0 && !hasValidLink) {
                 platformError.style.display = 'block';
-                return;
+                valid = false;
             } else {
                 platformError.style.display = 'none';
             }
 
+            // 3. Followers — must select one
+            const followersChecked = document.querySelector('input[name="followers"]:checked');
+            if (!followersChecked) {
+                valid = false;
+                // highlight section
+                document.querySelector('input[name="followers"]').closest('.form-group').style.border = '1px solid #ef4444';
+                document.querySelector('input[name="followers"]').closest('.form-group').style.borderRadius = '8px';
+                document.querySelector('input[name="followers"]').closest('.form-group').style.padding = '8px';
+            }
+
+            // 4. At least one language
+            const langChecked = document.querySelectorAll('input[name="languages"]:checked');
+            if (langChecked.length === 0) {
+                valid = false;
+            }
+
+            // 5. At least one promotion method
+            const methodChecked = document.querySelectorAll('input[name="methods"]:checked');
+            if (methodChecked.length === 0) {
+                valid = false;
+            }
+
+            // 6. At least one feature interest
+            const featureChecked = document.querySelectorAll('input[name="features"]:checked');
+            if (featureChecked.length === 0) {
+                valid = false;
+            }
+
+            // 7. Affiliate experience — must select
+            const affChecked = document.querySelector('input[name="affiliate_exp"]:checked');
+            if (!affChecked) {
+                valid = false;
+            }
+
+            // 8. Payout method — must select
+            const payoutChecked = document.querySelector('input[name="payout"]:checked');
+            if (!payoutChecked) {
+                valid = false;
+            }
+
+            // 9. USDT wallet validation (if USDT selected)
+            const walletInput = document.getElementById('walletAddress');
+            if (walletInput) clearError(walletInput);
+            if (payoutChecked && payoutChecked.value === 'usdt' && walletInput) {
+                if (!walletInput.value.trim()) {
+                    showError(walletInput, 'Enter your TRC-20 wallet address');
+                    valid = false;
+                } else if (!isValidWallet(walletInput.value)) {
+                    showError(walletInput, 'Invalid TRC-20 address (starts with T, 34 characters)');
+                    valid = false;
+                }
+            }
+
+            // 10. Terms checkbox
+            const termsBox = document.querySelector('input[name="terms"]');
+            if (!termsBox.checked) {
+                valid = false;
+                termsBox.closest('.form-group').style.border = '1px solid #ef4444';
+                termsBox.closest('.form-group').style.borderRadius = '8px';
+            }
+
+            // === If invalid, scroll to first error ===
+            if (!valid) {
+                const firstErr = document.querySelector('.field-error, [style*="border-color: rgb(239, 68, 68)"]');
+                if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+
+            // === Collect data ===
             const formData = new FormData(this);
             const data = {};
             formData.forEach((value, key) => {
@@ -659,6 +786,22 @@
                 } else {
                     data[key] = value;
                 }
+            });
+
+            // Collect platform links as structured object
+            data.platform_links = {};
+            checkedPlatforms.forEach(cb => {
+                const row = cb.closest('.platform-row');
+                const link = row.querySelector('.platform-link');
+                data.platform_links[cb.value] = link.value.trim();
+            });
+
+            // Collect other platforms
+            data.other_platforms = [];
+            document.querySelectorAll('.other-row').forEach(row => {
+                const name = row.querySelector('.platform-name').value.trim();
+                const link = row.querySelector('.other-link').value.trim();
+                if (name) data.other_platforms.push({ name, link });
             });
 
             console.log('Ambassador application:', data);
