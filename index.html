@@ -457,23 +457,23 @@
                     
                     <div class="platform-row">
                         <label class="platform-check"><input type="checkbox" name="platforms" value="telegram" onchange="toggleLink(this)"> Telegram</label>
-                        <input type="url" class="platform-link" name="link_telegram" placeholder="https://t.me/..." data-inactive="true" readonly>
+                        <input type="text" class="platform-link" name="link_telegram" placeholder="https://t.me/..." data-inactive="true" readonly>
                     </div>
                     <div class="platform-row">
                         <label class="platform-check"><input type="checkbox" name="platforms" value="discord" onchange="toggleLink(this)"> Discord</label>
-                        <input type="url" class="platform-link" name="link_discord" placeholder="Discord server invite link" data-inactive="true" readonly>
+                        <input type="text" class="platform-link" name="link_discord" placeholder="Discord server invite link" data-inactive="true" readonly>
                     </div>
                     <div class="platform-row">
                         <label class="platform-check"><input type="checkbox" name="platforms" value="reddit" onchange="toggleLink(this)"> Reddit</label>
-                        <input type="url" class="platform-link" name="link_reddit" placeholder="https://reddit.com/u/..." data-inactive="true" readonly>
+                        <input type="text" class="platform-link" name="link_reddit" placeholder="https://reddit.com/u/..." data-inactive="true" readonly>
                     </div>
                     <div class="platform-row">
                         <label class="platform-check"><input type="checkbox" name="platforms" value="x" onchange="toggleLink(this)"> X / Twitter</label>
-                        <input type="url" class="platform-link" name="link_x" placeholder="https://x.com/..." data-inactive="true" readonly>
+                        <input type="text" class="platform-link" name="link_x" placeholder="https://x.com/..." data-inactive="true" readonly>
                     </div>
                     <div class="platform-row">
                         <label class="platform-check"><input type="checkbox" name="platforms" value="onlyfans" onchange="toggleLink(this)"> OnlyFans</label>
-                        <input type="url" class="platform-link" name="link_onlyfans" placeholder="https://onlyfans.com/..." data-inactive="true" readonly>
+                        <input type="text" class="platform-link" name="link_onlyfans" placeholder="https://onlyfans.com/..." data-inactive="true" readonly>
                     </div>
                     <div class="platform-row">
                         <label class="platform-check"><input type="checkbox" name="platforms" value="other" onchange="toggleOther(this)"> Other</label>
@@ -482,15 +482,15 @@
                         <div class="hint" style="margin-top: 8px; margin-bottom: 8px;">Specify your platform(s)</div>
                         <div class="platform-row other-row">
                             <input type="text" class="platform-name" name="other_platform_1" placeholder="Platform name">
-                            <input type="url" class="platform-link other-link" name="link_other_1" placeholder="Link">
+                            <input type="text" class="platform-link other-link" name="link_other_1" placeholder="Link">
                         </div>
                         <div class="platform-row other-row">
                             <input type="text" class="platform-name" name="other_platform_2" placeholder="Platform name">
-                            <input type="url" class="platform-link other-link" name="link_other_2" placeholder="Link">
+                            <input type="text" class="platform-link other-link" name="link_other_2" placeholder="Link">
                         </div>
                         <div class="platform-row other-row">
                             <input type="text" class="platform-name" name="other_platform_3" placeholder="Platform name">
-                            <input type="url" class="platform-link other-link" name="link_other_3" placeholder="Link">
+                            <input type="text" class="platform-link other-link" name="link_other_3" placeholder="Link">
                         </div>
                     </div>
                     <div class="field-error" id="platformError">Please select at least one platform and provide a link</div>
@@ -682,7 +682,8 @@
             el.style.borderColor = '';
         }
         function isValidUrl(str) {
-            return /^https?:\/\/.+\..+/.test(str.trim());
+            // Accept URLs or plain IDs/handles — just check it's not empty
+            return str.trim().length > 0;
         }
         function isValidTgUsername(str) {
             // @username, 5-32 chars, alphanumeric + underscore
