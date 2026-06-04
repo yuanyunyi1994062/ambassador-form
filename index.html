@@ -847,11 +847,28 @@
 
             console.log('Ambassador application:', data);
             
-            // TODO: Replace with actual endpoint
-            // fetch('YOUR_ENDPOINT', { method: 'POST', body: JSON.stringify(data), headers: {'Content-Type': 'application/json'} })
-
-            document.getElementById('formCard').style.display = 'none';
-            document.getElementById('successMsg').style.display = 'block';
+            // Submit to backend
+            fetch('https://api.myshell.fun/api/ambassador/apply', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'myshell-service-name': 'organics-api'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result.success) {
+                    document.getElementById('formCard').style.display = 'none';
+                    document.getElementById('successMsg').style.display = 'block';
+                } else {
+                    alert('Submission failed: ' + (result.message || 'Please try again'));
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Network error, please try again later.');
+            });
         });
     </script>
 </body>
